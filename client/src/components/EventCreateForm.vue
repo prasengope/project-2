@@ -10,7 +10,7 @@
       </b-form-group>
       <b-form-group id="input-group-4">
         <b-form-checkbox-group v-model="form.isDate" id="checkboxes-4">
-          <b-form-checkbox value="isDate">Is this a Date? (or date-lite?)</b-form-checkbox>
+          <b-form-checkbox value="isDate">Is this a Date ;)?</b-form-checkbox>
         </b-form-checkbox-group>
       </b-form-group>
       <b-form-group id="input-group-2" label="Attendee Limit:" label-for="input-2">
@@ -26,33 +26,35 @@
           Events must have at least 2 people attending, including you
         </b-form-invalid-feedback>        
       </b-form-group>
-      <!-- <b-row class="my-1" v-for="thing in form.types" :key="thing"> -->
-        <!-- <b-col sm="3">
-          <label :for="`type-${thing}`">Event {{ thing }}:</label>
-        </b-col>
-        <b-col sm="5"> -->
-          <!-- How do we connect a v-model to form.types.date and form.types.time?? -->
-          <!-- v-model="form.types[thing]" ????? -->
-          <!-- <b-form-input :id="`type-${thing}`" :type="thing"></b-form-input>
-        </b-col>
-      </b-row> -->
-      <!-- <b-form-select class="mt-3" v-model="form.selectedPet" :options="form.petOptions"></b-form-select> -->
+
+      <b-form-group>
+      
+      <datetime id="input-group-3" label="Date:" label-for="input-3"
+          type="datetime"
+          v-model="form.eventDate"
+          required
+          use12-hour
+          :minute-step="15"
+          placeholder="   When is this happening?">
+        </datetime>
+            
+      </b-form-group>
+
       <b-form-textarea
         class="mt-3"
         id="textarea"
         v-model="form.eventDescription"
         placeholder="Describe your playdate..."
         rows="3"
+        required
         max-rows="6"
       ></b-form-textarea>      
       <b-form-textarea
         class="mt-3"
+        required
         id="textarea"
         v-model="form.eventLocation"
         placeholder="Where is this happening?"></b-form-textarea>      
-      <!-- <b-form-file accept="image/jpeg, image/png" placeholder="No Image Chosen"></b-form-file> -->
-      <!-- NOTE: Below button is not refreshing page anymore. I don't want that necessarily, but  -->
-      <!-- that was the only way the feed was live updating. -->
       <b-button class="mt-3 mr-1" type="submit" variant="outline-primary">Submit</b-button>
       <b-button class="mt-3" type="reset" variant="outline-danger">Reset</b-button>
     </b-form>
@@ -68,20 +70,22 @@ export default {
     GoogleLogin
   },
   computed: {
-    attendanceLimitState(){
-      return this.form.attendanceLimit > 0 ? true : false 
+    attendanceLimitState() {
+      return this.form.attendanceLimit > 0 ? true : false;
     }
   },
   props: ['playDate'],
   data() {
     return {
       form: {
-        userName: '',
+        userId: '',
+        userEmail: '',
         eventName: '',
         attendanceLimit: '',
         isDate: false,
         // eventLocation will need to be added axios post request below
-        eventLocation: '',
+        eventLocation: "",
+        eventDate: "",
         // types: [
         //   'date',
         //   'time'
@@ -94,47 +98,80 @@ export default {
         //   {value: 'b', text: 'second user pet'},
         //   {value: 'c', text: 'third user pet'}
         // ],
-        eventDescription: ''
+        eventDescription: ""
       },
-      domain: '',
+      domain: "",
       show: true
-    }
+    };
   },
   methods: {
     addToFeed(playDate) {
+      if(this.form.isDate) {
+        this.form.isDate = true;
+      }
 
-      console.log(JSON.stringify(this.form));
+      console.log("Form", JSON.stringify(this.form));
+      
+      var self = this
+      this.form.userEmail = localStorage.getItem('email')
+      this.getUser(this.form.email);
+      
       axios.post('/api/events/', {
-        userName: '',
-        eventName: this.form.eventName,
-        attendanceLimit: this.form.attendanceLimit,
-        isDate: this.form.isDate,
-        eventDescription: this.form.eventDescription,
-        eventDescription: this.form.eventLocation,
+        UserId: self.userId,
+        eventName: self.form.eventName,
+        attendanceLimit: self.form.attendanceLimit,
+        isDate: self.form.isDate,
+        eventDescription: self.form.eventDescription,
+        eventLocation: self.form.eventLocation,
+        eventDate: self.form.eventDate
       })
       .then(function(response){
-        this.$emit('updatefeed', response.data);
+        self.$emit('updatefeed', response.data);
         console.log("This is data: " + JSON.stringify(response.data));
-      }.bind(this))
+      })
+      .catch(function(err){
+        console.log(err);
+      })
+    },
+    getUser(email){
+      axios.get('api/user/' + email)
+      .then(function(response){
+        self.userId = response.data[0].id
+        console.log(userId)
+      })
       .catch(function(err){
         console.log(err);
       })
     },
     onReset(evt) {
-      evt.preventDefault()
+      evt.preventDefault();
       // Reset our form values
-      this.form.eventName = ''
-      this.form.attendanceLimit = ''
-      this.form.isDate = false
+      this.form.eventName = "";
+      this.form.attendanceLimit = "";
+      this.form.isDate = false;
       // this.form.selectedPet = null
       this.form.eventDescription = ''
       this.form.eventLocation = ''
+      this.form.eventDate = false;
       // Trick to reset/clear native browser form validation state
-      this.show = false
+      this.show = false;
       this.$nextTick(() => {
-        this.show = true
-      })
+        this.show = true;
+      });
     }
   }
-}
+};
 </script>
+
+<style>
+input.vdatetime-input {
+    width: 100%;
+}
+
+.vdatetime-popup__header {
+    padding: 18px 30px;
+    background: #C64242;
+    color: #fff;
+    font-size: 32px;
+}
+</style>

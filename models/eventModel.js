@@ -9,7 +9,7 @@ module.exports = function(sequelize, DataTypes) {
     isDate: {
       type: DataTypes.BOOLEAN
     },
-    location: {
+    eventLocation: {
       type: DataTypes.STRING
     },
     attendanceLimit: {
@@ -18,14 +18,17 @@ module.exports = function(sequelize, DataTypes) {
     attending: {
       type: DataTypes.INTEGER
     },
-    // dateTime: {
-    //   type: DataTypes.STRING
-    // },
+    eventDate: {
+      type: DataTypes.DATE
+    },
     userPet: {
       type: DataTypes.STRING
     },
     eventDescription: {
       type: DataTypes.TEXT
+    },
+    UserId: {
+      type: DataTypes.INTEGER
     }
   },{
     freezeTableName: true
@@ -36,6 +39,7 @@ module.exports = function(sequelize, DataTypes) {
     Event.hasMany(models.UserEvent, {
       onDelete: "cascade"
     });
+    Event.belongsTo(models.User);
   };
   return Event;
 };

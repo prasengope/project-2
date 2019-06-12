@@ -2,16 +2,16 @@ var User = require('./userModel');
 
 module.exports = function(sequelize, DataTypes) {
 	var Pet = sequelize.define('Pet', {
-		name: {
+		petName: {
 			type: DataTypes.STRING
 		},
-		age: {
+		petAge: {
 			type: DataTypes.INTEGER
 		},
 		petBreed: {
 			type: DataTypes.STRING
 		},
-		petPic: {
+		petSex: {
 			type: DataTypes.STRING
 		},
 		petInfo: {
@@ -22,9 +22,10 @@ module.exports = function(sequelize, DataTypes) {
 	Pet.associate = function(models) {
 		// This first association would be to store all the Pets a user owns
 		Pet.belongsTo(models.User, {
-			foreignKey: {
-				allowNull: false
-			}
+			// foreignKey: {
+			// 	allowNull: false
+			// }
+			onDelete: "cascade"
 		});
 	};
 

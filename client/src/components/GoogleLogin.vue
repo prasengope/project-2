@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="g-login">
     <div
       class="g-signin2"
       id="g-signin2"
@@ -10,9 +10,6 @@
       data-width="300"
       data-height="50"
     >Login</div>
-    <div v-show="signedIn">
-      <button id="g-signout" @click="signOut">Logout of Google</button>
-    </div>
   </div>
 </template>
 
@@ -27,12 +24,12 @@ export default {
         client_id:
           "50452222215-9ed386i1o1r9jmrptk8in5rnrbbcoh04.apps.googleusercontent.com"
       },
-      gUser: {
-        gId: "",
-        gName: "",
-        gImage: "",
-        gEmail: "",
-        gIdToken: ""
+      user: {
+        id: "",
+        name: "",
+        image: "",
+        description: "",
+        singleReadyMingle: false
       },
       signedIn: false
     };
@@ -53,37 +50,28 @@ export default {
   methods: {
     currentUser(googleUser) {
       var profile = googleUser.getBasicProfile();
-      var id_token = googleUser.getAuthResponse().id_token;
-      // console.log(googleUser);
-      // console.log("ID: " + profile.getId()); 
+      var email = profile.getEmail();
+      var emailString = "email" + email;
       console.log("Name: " + profile.getName());
-      // console.log("Image URL: " + profile.getImageUrl());
       console.log("Email: " + profile.getEmail()); 
-      // console.log("ID Token: " + id_token);
-      this.gUser.gId = profile.getId();
-      this.gUser.gName = profile.getName();
-      this.gUser.gImage = profile.getImageUrl();
-      this.gUser.gEmail = profile.getEmail();
-      this.gUser.gIdToken = id_token;
+      this.user.name = profile.getName();
+      this.user.image = profile.getImageUrl();
+      this.user.email = profile.getEmail();
+      localStorage.setItem('email', this.user.email)
+      localStorage.setItem('name', this.user.name)
       axios.post("/api/user/", {
-        name: this.gUser.gName,
-        email: this.gUser.gEmail,
-        profilePic: this.gUser.gImage
-      });
-      
+        name: this.user.name,
+        email: this.user.email,
+        profilePic: this.user.image
+      })
+      .then(function(data) {
+        console.log(data);
+      })
+      .catch(function(err) {
+        console.log(err);
+      })
       this.signedIn = true;
-    },
-    signOut() {
-      var auth2 = gapi.auth2.getAuthInstance();
-      auth2.signOut().then(function() {
-        console.log("User signed out.");
-      });
-      this.gUser.gId = "";
-      this.gUser.gName = "";
-      this.gUser.gImage = "";
-      this.gUser.gEmail = "";
-      this.gUser.gIdToken = "";
-      this.signedIn = false;
+      this.$router.push('home')
     }
   }
 };
